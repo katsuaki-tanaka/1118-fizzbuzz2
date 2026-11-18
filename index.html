@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FizzBuzz (1〜50) アニメーション</title>
+  <title>FizzBuzz (1〜50) 爆裂アニメーション</title>
   <style>
     :root {
       --bg-color: #f8fafc;
@@ -14,19 +14,19 @@
 
       --fizz-color: #0284c7;
       --fizz-bg: #e0f2fe;
-      --fizz-border: #7dd3fc;
+      --fizz-border: #38bdf8;
 
       --buzz-color: #d97706;
       --buzz-bg: #fef3c7;
-      --buzz-border: #fcd34d;
+      --buzz-border: #fbbf24;
 
       --fizzbuzz-color: #7c3aed;
       --fizzbuzz-bg: #f3e8ff;
       --fizzbuzz-border: #c084fc;
 
-      --num-color: #475569;
+      --num-color: #334155;
       --num-bg: #ffffff;
-      --num-border: #e2e8f0;
+      --num-border: #cbd5e1;
     }
 
     * {
@@ -43,46 +43,60 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 32px 16px;
+      padding: 28px 16px;
+      overflow-x: hidden;
+    }
+
+    /* 全画面パーティクル＆火球描画用キャンバス */
+    #fxCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
     }
 
     .container {
       width: 100%;
       max-width: 900px;
+      position: relative;
+      z-index: 1;
     }
 
     header {
       text-align: center;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     h1 {
-      font-size: 2rem;
+      font-size: 1.9rem;
       font-weight: 800;
       letter-spacing: -0.025em;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       color: #1e293b;
     }
 
     .subtitle {
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       color: var(--text-muted);
     }
 
     .legend {
       display: flex;
       justify-content: center;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
-      margin-top: 16px;
+      margin-top: 12px;
     }
 
     .legend-item {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-size: 0.85rem;
-      font-weight: 500;
+      font-size: 0.82rem;
+      font-weight: 600;
       padding: 4px 10px;
       border-radius: 9999px;
       border: 1px solid var(--border-color);
@@ -104,42 +118,46 @@
       justify-content: space-between;
       align-items: center;
       background: #ffffff;
-      padding: 16px 20px;
+      padding: 14px 18px;
       border-radius: 12px;
       border: 1px solid var(--border-color);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-      margin-bottom: 24px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      margin-bottom: 20px;
       flex-wrap: wrap;
-      gap: 16px;
+      gap: 12px;
     }
 
     .buttons {
       display: flex;
-      gap: 10px;
+      gap: 8px;
+      align-items: center;
     }
 
     button {
       cursor: pointer;
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       font-weight: 600;
-      padding: 10px 20px;
+      padding: 9px 18px;
       border-radius: 8px;
       border: none;
       transition: all 0.15s ease-in-out;
     }
 
     .btn-start {
-      background-color: #2563eb;
+      background: linear-gradient(135deg, #ef4444 0%, #ea580c 100%);
       color: #ffffff;
+      box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
     }
     .btn-start:hover:not(:disabled) {
-      background-color: #1d4ed8;
-      box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+      background: linear-gradient(135deg, #dc2626 0%, #c2410c 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
     }
     .btn-start:disabled {
-      background-color: #94a3b8;
+      background: #94a3b8;
+      box-shadow: none;
       cursor: not-allowed;
-      opacity: 0.7;
+      opacity: 0.75;
     }
 
     .btn-reset {
@@ -152,18 +170,32 @@
       color: #1e293b;
     }
 
-    .status-info {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: var(--text-muted);
+    .btn-sound {
+      background-color: #f8fafc;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+      padding: 9px 12px;
+      font-size: 0.85rem;
+    }
+    .btn-sound.active {
+      background-color: #fef3c7;
+      border-color: #f59e0b;
+      color: #b45309;
+    }
+
+    .controls-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
     }
 
     .speed-selector {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 0.9rem;
-      font-weight: 500;
+      gap: 6px;
+      font-size: 0.88rem;
+      font-weight: 600;
       color: var(--text-muted);
     }
 
@@ -173,72 +205,199 @@
       border: 1px solid var(--border-color);
       background: #ffffff;
       color: var(--text-main);
-      font-size: 0.9rem;
-      font-weight: 500;
+      font-size: 0.88rem;
+      font-weight: 600;
       cursor: pointer;
       outline: none;
-      transition: border-color 0.15s ease;
     }
     .speed-selector select:focus {
-      border-color: #2563eb;
+      border-color: #ea580c;
+    }
+
+    .status-info {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text-muted);
     }
 
     .status-count {
-      color: #2563eb;
+      color: #ea580c;
       font-size: 1.1rem;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+      gap: 8px;
       width: 100%;
+      will-change: transform;
     }
 
-    .card {
-      background: var(--card-bg);
+    .card-slot {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 58px;
+    }
+
+    /* === フェーズ1: 爆発前の爆弾（赤熱チャージ球） === */
+    .bomb-core {
+      position: absolute;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      background: radial-gradient(circle at 35% 35%, #fef08a 0%, #f97316 45%, #dc2626 80%, #7f1d1d 100%);
+      box-shadow: 0 0 14px #ef4444, 0 0 28px rgba(249, 115, 22, 0.8);
+      animation: bombCharge var(--charge-dur, 0.18s) cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards;
+      z-index: 5;
+      user-select: none;
+    }
+    .bomb-core.fizz {
+      background: radial-gradient(circle at 35% 35%, #ffffff 0%, #38bdf8 50%, #0284c7 90%);
+      box-shadow: 0 0 16px #38bdf8, 0 0 32px rgba(2, 132, 199, 0.85);
+    }
+    .bomb-core.buzz {
+      background: radial-gradient(circle at 35% 35%, #ffffff 0%, #fde047 50%, #d97706 90%);
+      box-shadow: 0 0 16px #fbbf24, 0 0 32px rgba(217, 119, 6, 0.85);
+    }
+    .bomb-core.fizzbuzz {
+      width: 42px;
+      height: 42px;
+      font-size: 1.35rem;
+      background: radial-gradient(circle at 35% 35%, #ffffff 0%, #f0abfc 40%, #9333ea 80%, #db2777 100%);
+      box-shadow: 0 0 22px #e879f9, 0 0 42px rgba(147, 51, 234, 0.95);
+    }
+
+    /* 爆弾が小刻みに震えながら赤熱膨張して臨界点に達するアニメーション */
+    @keyframes bombCharge {
+      0% {
+        transform: scale(0.2);
+        filter: brightness(1);
+      }
+      35% {
+        transform: scale(0.95) translate(-2px, 1px);
+        filter: brightness(1.2);
+      }
+      55% {
+        transform: scale(1.1) translate(2px, -2px);
+        filter: brightness(1.5);
+      }
+      75% {
+        transform: scale(1.28) translate(-3px, 2px);
+        filter: brightness(2);
+      }
+      90% {
+        transform: scale(1.45) translate(3px, -2px);
+        filter: brightness(3);
+      }
+      100% {
+        transform: scale(1.65);
+        filter: brightness(4);
+      }
+    }
+
+    /* === フェーズ2: 爆発直後のクレーター残光 === */
+    .blast-crater {
+      position: absolute;
+      inset: -4px;
       border-radius: 12px;
-      padding: 14px 10px;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, rgba(251, 146, 60, 0.75) 45%, rgba(0, 0, 0, 0) 75%);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 3;
+    }
+    .blast-crater.detonate {
+      animation: craterFlash 0.42s ease-out forwards;
+    }
+    @keyframes craterFlash {
+      0% {
+        opacity: 1;
+        transform: scale(0.5);
+      }
+      25% {
+        opacity: 1;
+        transform: scale(1.45);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(1.8);
+      }
+    }
+
+    /* === フェーズ3: 爆発した後に煙の中から現れるカード === */
+    .card {
+      width: 100%;
+      height: 100%;
+      background: var(--card-bg);
+      border-radius: 8px;
+      padding: 6px 4px;
       text-align: center;
       border: 1.5px solid var(--border-color);
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
       position: relative;
-      animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      opacity: 0;
+      transform: scale(0);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 84px;
+      min-height: 58px;
       transition: transform 0.15s ease, box-shadow 0.15s ease;
+      z-index: 2;
     }
 
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+    /* 爆発後に付与されるクラス */
+    .card.revealed {
+      animation: cardAfterExplosion 0.42s cubic-bezier(0.22, 1.4, 0.36, 1) forwards;
     }
 
-    @keyframes popIn {
+    @keyframes cardAfterExplosion {
       0% {
         opacity: 0;
-        transform: scale(0.6) translateY(10px);
+        transform: scale(0.25) translateY(6px);
+        filter: brightness(3) contrast(1.5);
+        box-shadow: 0 0 25px #f97316, 0 0 45px #fde047;
+      }
+      45% {
+        opacity: 1;
+        transform: scale(1.16) translateY(-3px);
+        filter: brightness(1.4);
+        box-shadow: 0 0 16px rgba(249, 115, 22, 0.6);
+      }
+      75% {
+        transform: scale(0.96) translateY(1px);
+        filter: brightness(1.08);
       }
       100% {
         opacity: 1;
         transform: scale(1) translateY(0);
+        filter: brightness(1);
       }
     }
 
+    .card:hover {
+      transform: translateY(-2px) scale(1.04);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    }
+
     .card-number {
-      font-size: 0.8rem;
+      font-size: 0.68rem;
       font-weight: 600;
       color: #94a3b8;
       margin-bottom: 2px;
+      line-height: 1;
     }
 
     .card-label {
-      font-size: 1.15rem;
+      font-size: 0.92rem;
       font-weight: 700;
       letter-spacing: -0.01em;
+      line-height: 1.15;
     }
 
     /* Style variants */
@@ -248,7 +407,7 @@
     }
     .card.num .card-label {
       color: var(--num-color);
-      font-size: 1.25rem;
+      font-size: 1.05rem;
     }
 
     .card.fizz {
@@ -270,17 +429,17 @@
     .card.fizzbuzz {
       background: linear-gradient(135deg, #f5f3ff 0%, #fae8ff 100%);
       border-color: var(--fizzbuzz-border);
-      box-shadow: 0 4px 10px rgba(124, 58, 237, 0.15);
+      box-shadow: 0 3px 10px rgba(124, 58, 237, 0.22);
     }
     .card.fizzbuzz .card-label {
       background: linear-gradient(135deg, #7c3aed 0%, #db2777 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      font-size: 1.2rem;
+      font-size: 0.88rem;
       font-weight: 800;
     }
     .card.fizzbuzz .card-number {
-      color: #c084fc;
+      color: #a855f7;
     }
 
     .empty-state {
@@ -297,41 +456,46 @@
 </head>
 <body>
 
+  <canvas id="fxCanvas"></canvas>
+
   <div class="container">
     <header>
-      <h1>FizzBuzz (1 〜 50)</h1>
-      <p class="subtitle">ボタンを押すと、1 から 50 までの FizzBuzz を順次アニメーション表示します。</p>
+      <h1>💥 FizzBuzz (1 〜 50)</h1>
+      <p class="subtitle">1枚ずつ爆弾が膨張して大爆発し、爆煙が晴れたあとにカードが出現します。</p>
       
       <div class="legend">
         <div class="legend-item"><span class="dot dot-num"></span> 通常の数値</div>
         <div class="legend-item"><span class="dot dot-fizz"></span> Fizz (3の倍数)</div>
         <div class="legend-item"><span class="dot dot-buzz"></span> Buzz (5の倍数)</div>
-        <div class="legend-item"><span class="dot dot-fizzbuzz"></span> FizzBuzz (15の倍数)</div>
+        <div class="legend-item"><span class="dot dot-fizzbuzz"></span> FizzBuzz (15の倍数・特大爆発)</div>
       </div>
     </header>
 
     <div class="control-panel">
       <div class="buttons">
-        <button id="btnStart" class="btn-start">カウント開始 ▶</button>
+        <button id="btnStart" class="btn-start">爆発カウント開始 💣</button>
         <button id="btnReset" class="btn-reset">リセット ↺</button>
+        <button id="btnSound" class="btn-sound active" title="爆発音のON/OFF">🔊 爆発音: ON</button>
       </div>
-      <div class="speed-selector">
-        <label for="speedSelect">速度:</label>
-        <select id="speedSelect">
-          <option value="350">とてもゆっくり (350ms)</option>
-          <option value="200" selected>ゆっくり (200ms)</option>
-          <option value="120">ふつう (120ms)</option>
-          <option value="60">はやい (60ms)</option>
-        </select>
-      </div>
-      <div class="status-info">
-        進捗: <span id="statusCount" class="status-count">0</span> / 50
+      <div class="controls-right">
+        <div class="speed-selector">
+          <label for="speedSelect">テンポ:</label>
+          <select id="speedSelect">
+            <option value="650">じっくり (650ms)</option>
+            <option value="420" selected>ゆっくり (420ms)</option>
+            <option value="250">ふつう (250ms)</option>
+            <option value="120">連続爆撃 (120ms)</option>
+          </select>
+        </div>
+        <div class="status-info">
+          進捗: <span id="statusCount" class="status-count">0</span> / 50
+        </div>
       </div>
     </div>
 
     <div id="gridContainer" class="grid">
       <div id="emptyState" class="empty-state">
-        「カウント開始」ボタンを押すとアニメーションが始まります
+        「爆発カウント開始 💣」ボタンを押すと、1から順に大爆発しながらカードが現れます
       </div>
     </div>
   </div>
@@ -341,16 +505,466 @@
 
     const btnStart = document.getElementById('btnStart');
     const btnReset = document.getElementById('btnReset');
+    const btnSound = document.getElementById('btnSound');
     const speedSelect = document.getElementById('speedSelect');
     const statusCount = document.getElementById('statusCount');
     const gridContainer = document.getElementById('gridContainer');
     const emptyState = document.getElementById('emptyState');
+    const canvas = document.getElementById('fxCanvas');
+    const ctx = canvas.getContext('2d');
 
     let currentNum = 1;
     let timerId = null;
+    let activeTimeouts = [];
     let isRunning = false;
+    let soundEnabled = true;
+    let audioCtx = null;
 
-    // FizzBuzz 判定
+    // ==========================================
+    // 1. Web Audio API シンセサイズ爆発音エンジン
+    // ==========================================
+    function playExplosionSound(type) {
+      if (!soundEnabled) return;
+      try {
+        if (!audioCtx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (!AudioContextClass) return;
+          audioCtx = new AudioContextClass();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+
+        const now = audioCtx.currentTime;
+        const isBig = type === 'fizzbuzz';
+        const isMid = type === 'fizz' || type === 'buzz';
+        const duration = isBig ? 0.65 : (isMid ? 0.38 : 0.26);
+
+        // (A) ホワイトノイズによる爆風音（ローパスフィルタ付き）
+        const bufferSize = Math.floor(audioCtx.sampleRate * duration);
+        const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          output[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 1.4);
+        }
+
+        const whiteNoise = audioCtx.createBufferSource();
+        whiteNoise.buffer = noiseBuffer;
+
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(isBig ? 1400 : 950, now);
+        filter.frequency.exponentialRampToValueAtTime(75, now + duration);
+
+        const noiseGain = audioCtx.createGain();
+        noiseGain.gain.setValueAtTime(isBig ? 0.38 : (isMid ? 0.24 : 0.16), now);
+        noiseGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+        whiteNoise.connect(filter);
+        filter.connect(noiseGain);
+        noiseGain.connect(audioCtx.destination);
+        whiteNoise.start(now);
+
+        // (B) 重低音インパクト（ドォン！という腹に響くサブベース）
+        const osc = audioCtx.createOscillator();
+        const oscGain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(isBig ? 150 : 120, now);
+        osc.frequency.exponentialRampToValueAtTime(22, now + duration * 0.85);
+
+        oscGain.gain.setValueAtTime(isBig ? 0.45 : (isMid ? 0.28 : 0.2), now);
+        oscGain.gain.exponentialRampToValueAtTime(0.001, now + duration * 0.85);
+
+        osc.connect(oscGain);
+        oscGain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + duration * 0.85);
+      } catch (e) {
+        // オーディオ非対応環境では無視
+      }
+    }
+
+    btnSound.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      btnSound.textContent = soundEnabled ? '🔊 爆発音: ON' : '🔇 爆発音: OFF';
+      btnSound.classList.toggle('active', soundEnabled);
+    });
+
+    // ==========================================
+    // 2. 60fps 2D物理パーティクル＆火球エンジン (Canvas)
+    // ==========================================
+    let fireballs = [];
+    let smokes = [];
+    let sparks = [];
+    let debrisList = [];
+    let shockwaves = [];
+    let callouts = [];
+    let shakeIntensity = 0;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // 導火線火花（爆発前のチリチリ火花）
+    function spawnFuseSparks(x, y, type) {
+      const color = type === 'fizzbuzz' ? '#e879f9' : (type === 'fizz' ? '#38bdf8' : (type === 'buzz' ? '#fbbf24' : '#fb923c'));
+      for (let i = 0; i < 8; i++) {
+        const angle = -Math.PI / 2 + (Math.random() - 0.5) * 2.2;
+        const speed = 1.5 + Math.random() * 3.5;
+        sparks.push({
+          x,
+          y: y - 10,
+          prevX: x,
+          prevY: y - 10,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          gravity: 0.15,
+          drag: 0.96,
+          color: i % 2 === 0 ? '#ffffff' : color,
+          size: 2,
+          alpha: 1,
+          decay: 0.06 + Math.random() * 0.04
+        });
+      }
+    }
+
+    // 本格大爆発の生成
+    function triggerCanvasExplosion(x, y, type) {
+      const isBig = type === 'fizzbuzz';
+      const isMid = type === 'fizz' || type === 'buzz';
+      const scale = isBig ? 1.75 : (isMid ? 1.25 : 1.0);
+
+      // カメラシェイク強度を追加
+      shakeIntensity = Math.min(shakeIntensity + (isBig ? 14 : (isMid ? 6 : 3.5)), 18);
+
+      const themeColors = {
+        fizzbuzz: ['#ffffff', '#fde047', '#f472b6', '#e879f9', '#a855f7', '#fb923c'],
+        fizz: ['#ffffff', '#bae6fd', '#38bdf8', '#0284c7', '#fef08a'],
+        buzz: ['#ffffff', '#fef08a', '#fbbf24', '#f59e0b', '#ea580c'],
+        num: ['#ffffff', '#fef08a', '#fb923c', '#ef4444', '#dc2626']
+      }[type];
+
+      // (1) 衝撃波リング (Shockwaves)
+      shockwaves.push({
+        x, y,
+        radius: 6,
+        maxRadius: 72 * scale,
+        lineWidth: 6 * scale,
+        color: themeColors[2],
+        alpha: 1,
+        speed: 5.5 * scale
+      });
+      if (isBig || isMid) {
+        shockwaves.push({
+          x, y,
+          radius: 2,
+          maxRadius: 105 * scale,
+          lineWidth: 3.5 * scale,
+          color: '#ffffff',
+          alpha: 0.9,
+          speed: 7.5 * scale
+        });
+      }
+
+      // (2) 猛烈な火球クラスター (Volumetric Fireballs)
+      const fireballCount = isBig ? 26 : (isMid ? 18 : 14);
+      for (let i = 0; i < fireballCount; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = Math.random() * 14 * scale;
+        const speed = (0.6 + Math.random() * 3.2) * scale;
+        fireballs.push({
+          x: x + Math.cos(angle) * dist,
+          y: y + Math.sin(angle) * dist,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 0.4,
+          radius: (10 + Math.random() * 16) * scale,
+          growRate: (1.2 + Math.random() * 1.4) * scale,
+          life: 0,
+          maxLife: 16 + Math.floor(Math.random() * 12),
+          type
+        });
+      }
+
+      // (3) 立ち昇る黒煙・爆煙 (Billowing Smoke Clouds)
+      const smokeCount = isBig ? 18 : (isMid ? 12 : 9);
+      for (let i = 0; i < smokeCount; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = (0.8 + Math.random() * 2.6) * scale;
+        const gray = 55 + Math.floor(Math.random() * 55);
+        smokes.push({
+          x: x + (Math.random() - 0.5) * 16,
+          y: y + (Math.random() - 0.5) * 16,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 1.1, // 熱で上昇する
+          radius: (12 + Math.random() * 14) * scale,
+          growRate: 0.75 * scale,
+          color: `rgb(${gray}, ${gray + 6}, ${gray + 14})`,
+          alpha: 0.65 + Math.random() * 0.2,
+          decay: 0.016 + Math.random() * 0.012
+        });
+      }
+
+      // (4) 重力＆軌跡付きの高速火花 (High-Velocity Gravity Sparks)
+      const sparkCount = isBig ? 75 : (isMid ? 42 : 28);
+      for (let i = 0; i < sparkCount; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = (3 + Math.random() * 9.5) * scale;
+        sparks.push({
+          x,
+          y,
+          prevX: x,
+          prevY: y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 1.5,
+          gravity: 0.24,
+          drag: 0.95,
+          color: themeColors[i % themeColors.length],
+          size: (1.8 + Math.random() * 2.5) * (isBig ? 1.25 : 1),
+          alpha: 1,
+          decay: 0.02 + Math.random() * 0.022
+        });
+      }
+
+      // (5) 回転しながら吹き飛ぶ破片 (Spinning Debris Shrapnel)
+      const debrisCount = isBig ? 18 : (isMid ? 10 : 6);
+      for (let i = 0; i < debrisCount; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = (2.5 + Math.random() * 7) * scale;
+        debrisList.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 2.2,
+          gravity: 0.32,
+          rot: Math.random() * Math.PI * 2,
+          vRot: (Math.random() - 0.5) * 0.35,
+          w: (4 + Math.random() * 5) * (isBig ? 1.3 : 1),
+          h: (3 + Math.random() * 4) * (isBig ? 1.3 : 1),
+          color: i % 2 === 0 ? '#1e293b' : themeColors[i % themeColors.length],
+          alpha: 1,
+          decay: 0.022 + Math.random() * 0.015
+        });
+      }
+
+      // (6) コミック風インパクト文字 ("BOOM!", "FIZZ!", "BUZZ!", "FIZZBUZZ!!")
+      const calloutText = isBig ? '💥 FIZZBUZZ!!' : (type === 'fizz' ? '💥 FIZZ!' : (type === 'buzz' ? '💥 BUZZ!' : 'BOOM!'));
+      callouts.push({
+        x,
+        y: y - 18,
+        vy: -1.4,
+        text: calloutText,
+        scale: 0.3,
+        targetScale: isBig ? 1.35 : (isMid ? 1.05 : 0.82),
+        color: isBig ? '#d946ef' : (type === 'fizz' ? '#0284c7' : (type === 'buzz' ? '#d97706' : '#ea580c')),
+        alpha: 1,
+        life: 0,
+        maxLife: isBig ? 42 : 28
+      });
+    }
+
+    // 毎フレームの描画ループ
+    function renderFX() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // カメラシェイクの更新
+      if (shakeIntensity > 0.2) {
+        const dx = (Math.random() - 0.5) * shakeIntensity * 2;
+        const dy = (Math.random() - 0.5) * shakeIntensity * 2;
+        gridContainer.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+        shakeIntensity *= 0.82;
+      } else if (shakeIntensity > 0) {
+        shakeIntensity = 0;
+        gridContainer.style.transform = '';
+      }
+
+      // 1. 黒煙（通常合成で背面に描画）
+      ctx.globalCompositeOperation = 'source-over';
+      for (let i = smokes.length - 1; i >= 0; i--) {
+        const s = smokes[i];
+        s.x += s.vx;
+        s.y += s.vy;
+        s.vx *= 0.94;
+        s.vy *= 0.96;
+        s.radius += s.growRate;
+        s.alpha -= s.decay;
+
+        if (s.alpha <= 0) {
+          smokes.splice(i, 1);
+          continue;
+        }
+
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, s.alpha);
+        const grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.radius);
+        grad.addColorStop(0, s.color);
+        grad.addColorStop(0.6, s.color);
+        grad.addColorStop(1, 'rgba(100, 116, 139, 0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // 2. 火球クラスター（加算合成 lighter で白熱感を表現）
+      ctx.globalCompositeOperation = 'lighter';
+      for (let i = fireballs.length - 1; i >= 0; i--) {
+        const f = fireballs[i];
+        f.x += f.vx;
+        f.y += f.vy;
+        f.vx *= 0.92;
+        f.vy *= 0.92;
+        f.radius += f.growRate;
+        f.life++;
+
+        if (f.life >= f.maxLife) {
+          fireballs.splice(i, 1);
+          continue;
+        }
+
+        const progress = f.life / f.maxLife;
+        const alpha = 1 - Math.pow(progress, 1.5);
+
+        const grad = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.radius);
+        if (f.type === 'fizzbuzz') {
+          grad.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
+          grad.addColorStop(0.35, `rgba(240, 171, 252, ${alpha * 0.9})`);
+          grad.addColorStop(0.7, `rgba(192, 38, 211, ${alpha * 0.6})`);
+          grad.addColorStop(1, 'rgba(124, 58, 237, 0)');
+        } else if (f.type === 'fizz') {
+          grad.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
+          grad.addColorStop(0.35, `rgba(125, 211, 252, ${alpha * 0.9})`);
+          grad.addColorStop(0.7, `rgba(2, 132, 199, ${alpha * 0.6})`);
+          grad.addColorStop(1, 'rgba(3, 105, 161, 0)');
+        } else {
+          grad.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
+          grad.addColorStop(0.3, `rgba(254, 240, 138, ${alpha * 0.95})`);
+          grad.addColorStop(0.65, `rgba(249, 115, 22, ${alpha * 0.7})`);
+          grad.addColorStop(1, 'rgba(220, 38, 38, 0)');
+        }
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 3. 衝撃波リング
+      for (let i = shockwaves.length - 1; i >= 0; i--) {
+        const sw = shockwaves[i];
+        sw.radius += sw.speed;
+        sw.speed *= 0.93;
+        sw.alpha = Math.max(0, 1 - sw.radius / sw.maxRadius);
+
+        if (sw.alpha <= 0.02 || sw.radius >= sw.maxRadius) {
+          shockwaves.splice(i, 1);
+          continue;
+        }
+
+        ctx.save();
+        ctx.globalAlpha = sw.alpha;
+        ctx.strokeStyle = sw.color;
+        ctx.lineWidth = Math.max(0.5, sw.lineWidth * sw.alpha);
+        ctx.beginPath();
+        ctx.arc(sw.x, sw.y, sw.radius, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // 4. 軌跡付き重力スパーク
+      for (let i = sparks.length - 1; i >= 0; i--) {
+        const sp = sparks[i];
+        sp.prevX = sp.x;
+        sp.prevY = sp.y;
+        sp.vx *= sp.drag;
+        sp.vy = sp.vy * sp.drag + sp.gravity;
+        sp.x += sp.vx;
+        sp.y += sp.vy;
+        sp.alpha -= sp.decay;
+
+        if (sp.alpha <= 0) {
+          sparks.splice(i, 1);
+          continue;
+        }
+
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, sp.alpha);
+        ctx.strokeStyle = sp.color;
+        ctx.lineWidth = sp.size;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(sp.prevX, sp.prevY);
+        ctx.lineTo(sp.x, sp.y);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // 5. 回転する破片 (Debris)
+      ctx.globalCompositeOperation = 'source-over';
+      for (let i = debrisList.length - 1; i >= 0; i--) {
+        const d = debrisList[i];
+        d.x += d.vx;
+        d.y += d.vy;
+        d.vy += d.gravity;
+        d.vx *= 0.97;
+        d.rot += d.vRot;
+        d.alpha -= d.decay;
+
+        if (d.alpha <= 0) {
+          debrisList.splice(i, 1);
+          continue;
+        }
+
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, d.alpha);
+        ctx.translate(d.x, d.y);
+        ctx.rotate(d.rot);
+        ctx.fillStyle = d.color;
+        ctx.fillRect(-d.w / 2, -d.h / 2, d.w, d.h);
+        ctx.restore();
+      }
+
+      // 6. コミックインパクト文字 ("BOOM!" / "FIZZ!" / "BUZZ!" / "FIZZBUZZ!!")
+      for (let i = callouts.length - 1; i >= 0; i--) {
+        const c = callouts[i];
+        c.y += c.vy;
+        c.vy *= 0.92;
+        c.scale += (c.targetScale - c.scale) * 0.35;
+        c.life++;
+
+        if (c.life >= c.maxLife) {
+          callouts.splice(i, 1);
+          continue;
+        }
+
+        const fadeStart = c.maxLife * 0.55;
+        const alpha = c.life > fadeStart ? 1 - (c.life - fadeStart) / (c.maxLife - fadeStart) : 1;
+
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, alpha);
+        ctx.translate(c.x, c.y);
+        ctx.scale(c.scale, c.scale);
+        ctx.font = '900 15px system-ui, -apple-system, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#ffffff';
+        ctx.strokeText(c.text, 0, 0);
+        ctx.fillStyle = c.color;
+        ctx.fillText(c.text, 0, 0);
+        ctx.restore();
+      }
+
+      requestAnimationFrame(renderFX);
+    }
+    requestAnimationFrame(renderFX);
+
+    // ==========================================
+    // 3. FizzBuzz 判定と「膨張 → 大爆発 → 煙の後にカード出現」進行
+    // ==========================================
     function evaluateFizzBuzz(n) {
       if (n % 15 === 0) {
         return { type: 'fizzbuzz', label: 'FizzBuzz', subText: n };
@@ -364,9 +978,37 @@
       return { type: 'num', label: `${n}`, subText: `#${n}` };
     }
 
-    // 1つのカードを作成して追加
-    function appendCard(n) {
+    function registerTimeout(fn, delay) {
+      const id = setTimeout(() => {
+        activeTimeouts = activeTimeouts.filter(t => t !== id);
+        fn();
+      }, delay);
+      activeTimeouts.push(id);
+      return id;
+    }
+
+    // 1枚のカードを「①爆弾膨張 → ②大爆発 → ③爆発した後にカード出現」の3段階で表示
+    function appendCardWithExplosion(n, intervalMs) {
       const data = evaluateFizzBuzz(n);
+
+      // スロットを作成してグリッドに配置
+      const slot = document.createElement('div');
+      slot.className = 'card-slot';
+
+      // フェーズ1用：赤熱して膨張する爆弾コア
+      const chargeTime = Math.max(90, Math.min(200, Math.floor(intervalMs * 0.42)));
+      const bomb = document.createElement('div');
+      bomb.className = `bomb-core ${data.type}`;
+      bomb.style.setProperty('--charge-dur', `${chargeTime}ms`);
+      bomb.textContent = '💣';
+      slot.appendChild(bomb);
+
+      // フェーズ2用：爆発クレーター閃光
+      const crater = document.createElement('div');
+      crater.className = 'blast-crater';
+      slot.appendChild(crater);
+
+      // フェーズ3用：カード本体（最初は非表示、爆発した後に revealed クラスで出現）
       const card = document.createElement('div');
       card.className = `card ${data.type}`;
 
@@ -380,23 +1022,52 @@
 
       card.appendChild(numEl);
       card.appendChild(labelEl);
-      gridContainer.appendChild(card);
+      slot.appendChild(card);
+      gridContainer.appendChild(slot);
 
-      statusCount.textContent = n;
+      // 導火線の火花を散らす
+      const rect = slot.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      spawnFuseSparks(centerX, centerY, data.type);
+
+      // ② 臨界点に達したらドカーン！大爆発！
+      registerTimeout(() => {
+        bomb.remove();
+        crater.classList.add('detonate');
+
+        // 最新の座標を取得してCanvas大爆発＆爆発音を発動
+        const currentRect = slot.getBoundingClientRect();
+        const cx = currentRect.left + currentRect.width / 2;
+        const cy = currentRect.top + currentRect.height / 2;
+        triggerCanvasExplosion(cx, cy, data.type);
+        playExplosionSound(data.type);
+
+        // ③ 爆発が炸裂した「後」に、爆煙の中からカードが出現！
+        const revealDelay = Math.max(90, Math.min(170, Math.floor(intervalMs * 0.35)));
+        registerTimeout(() => {
+          card.classList.add('revealed');
+          statusCount.textContent = n;
+        }, revealDelay);
+
+      }, chargeTime);
     }
 
     // ステップ実行ループ
     function step() {
       if (currentNum > MAX_COUNT) {
-        stopAnimation();
-        btnStart.textContent = '完了 ✓';
-        btnStart.disabled = true;
+        const finishDelay = 450;
+        registerTimeout(() => {
+          stopAnimation();
+          btnStart.textContent = '爆発完了 ✓';
+          btnStart.disabled = true;
+        }, finishDelay);
         return;
       }
 
-      appendCard(currentNum);
+      const intervalMs = Number(speedSelect.value) || 420;
+      appendCardWithExplosion(currentNum, intervalMs);
       currentNum++;
-      const intervalMs = Number(speedSelect.value) || 200;
       timerId = setTimeout(step, intervalMs);
     }
 
@@ -410,7 +1081,7 @@
 
       isRunning = true;
       btnStart.disabled = true;
-      btnStart.textContent = '実行中...';
+      btnStart.textContent = '爆裂進行中... 💥';
       step();
     }
 
@@ -420,6 +1091,8 @@
         clearTimeout(timerId);
         timerId = null;
       }
+      activeTimeouts.forEach(id => clearTimeout(id));
+      activeTimeouts = [];
       isRunning = false;
     }
 
@@ -429,9 +1102,17 @@
       currentNum = 1;
       statusCount.textContent = '0';
       gridContainer.innerHTML = '';
+      gridContainer.style.transform = '';
       gridContainer.appendChild(emptyState);
+      fireballs = [];
+      smokes = [];
+      sparks = [];
+      debrisList = [];
+      shockwaves = [];
+      callouts = [];
+      shakeIntensity = 0;
       btnStart.disabled = false;
-      btnStart.textContent = 'カウント開始 ▶';
+      btnStart.textContent = '爆発カウント開始 💣';
     }
 
     btnStart.addEventListener('click', startAnimation);
