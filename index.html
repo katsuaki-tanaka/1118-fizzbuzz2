@@ -158,6 +158,31 @@
       color: var(--text-muted);
     }
 
+    .speed-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .speed-selector select {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: #ffffff;
+      color: var(--text-main);
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+    .speed-selector select:focus {
+      border-color: #2563eb;
+    }
+
     .status-count {
       color: #2563eb;
       font-size: 1.1rem;
@@ -178,7 +203,7 @@
       border: 1.5px solid var(--border-color);
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
       position: relative;
-      animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -290,6 +315,15 @@
         <button id="btnStart" class="btn-start">カウント開始 ▶</button>
         <button id="btnReset" class="btn-reset">リセット ↺</button>
       </div>
+      <div class="speed-selector">
+        <label for="speedSelect">速度:</label>
+        <select id="speedSelect">
+          <option value="350">とてもゆっくり (350ms)</option>
+          <option value="200" selected>ゆっくり (200ms)</option>
+          <option value="120">ふつう (120ms)</option>
+          <option value="60">はやい (60ms)</option>
+        </select>
+      </div>
       <div class="status-info">
         進捗: <span id="statusCount" class="status-count">0</span> / 50
       </div>
@@ -304,10 +338,10 @@
 
   <script>
     const MAX_COUNT = 50;
-    const INTERVAL_MS = 60; // 1件あたりの表示間隔（ミリ秒）
 
     const btnStart = document.getElementById('btnStart');
     const btnReset = document.getElementById('btnReset');
+    const speedSelect = document.getElementById('speedSelect');
     const statusCount = document.getElementById('statusCount');
     const gridContainer = document.getElementById('gridContainer');
     const emptyState = document.getElementById('emptyState');
@@ -362,7 +396,8 @@
 
       appendCard(currentNum);
       currentNum++;
-      timerId = setTimeout(step, INTERVAL_MS);
+      const intervalMs = Number(speedSelect.value) || 200;
+      timerId = setTimeout(step, intervalMs);
     }
 
     // アニメーション開始
