@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FizzBuzz (1〜50) アニメーション</title>
+  <style>
+    :root {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+
+      --fizz-color: #0284c7;
+      --fizz-bg: #e0f2fe;
+      --fizz-border: #7dd3fc;
+
+      --buzz-color: #d97706;
+      --buzz-bg: #fef3c7;
+      --buzz-border: #fcd34d;
+
+      --fizzbuzz-color: #7c3aed;
+      --fizzbuzz-bg: #f3e8ff;
+      --fizzbuzz-border: #c084fc;
+
+      --num-color: #475569;
+      --num-bg: #ffffff;
+      --num-border: #e2e8f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      margin-bottom: 8px;
+      color: #1e293b;
+    }
+
+    .subtitle {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      border: 1px solid var(--border-color);
+      background: #ffffff;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .dot-num { background: #94a3b8; }
+    .dot-fizz { background: var(--fizz-color); }
+    .dot-buzz { background: var(--buzz-color); }
+    .dot-fizzbuzz { background: var(--fizzbuzz-color); }
+
+    .control-panel {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+      padding: 16px 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      transition: all 0.15s ease-in-out;
+    }
+
+    .btn-start {
+      background-color: #2563eb;
+      color: #ffffff;
+    }
+    .btn-start:hover:not(:disabled) {
+      background-color: #1d4ed8;
+      box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+    }
+    .btn-start:disabled {
+      background-color: #94a3b8;
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    .btn-reset {
+      background-color: #f1f5f9;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+    }
+    .btn-reset:hover {
+      background-color: #e2e8f0;
+      color: #1e293b;
+    }
+
+    .status-info {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .status-count {
+      color: #2563eb;
+      font-size: 1.1rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 12px;
+      width: 100%;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 14px 10px;
+      text-align: center;
+      border: 1.5px solid var(--border-color);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      position: relative;
+      animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 84px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    @keyframes popIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.6) translateY(10px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .card-number {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-bottom: 2px;
+    }
+
+    .card-label {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    /* Style variants */
+    .card.num {
+      background: var(--num-bg);
+      border-color: var(--num-border);
+    }
+    .card.num .card-label {
+      color: var(--num-color);
+      font-size: 1.25rem;
+    }
+
+    .card.fizz {
+      background: var(--fizz-bg);
+      border-color: var(--fizz-border);
+    }
+    .card.fizz .card-label {
+      color: var(--fizz-color);
+    }
+
+    .card.buzz {
+      background: var(--buzz-bg);
+      border-color: var(--buzz-border);
+    }
+    .card.buzz .card-label {
+      color: var(--buzz-color);
+    }
+
+    .card.fizzbuzz {
+      background: linear-gradient(135deg, #f5f3ff 0%, #fae8ff 100%);
+      border-color: var(--fizzbuzz-border);
+      box-shadow: 0 4px 10px rgba(124, 58, 237, 0.15);
+    }
+    .card.fizzbuzz .card-label {
+      background: linear-gradient(135deg, #7c3aed 0%, #db2777 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 1.2rem;
+      font-weight: 800;
+    }
+    .card.fizzbuzz .card-number {
+      color: #c084fc;
+    }
+
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      color: #94a3b8;
+      background: #ffffff;
+      border: 2px dashed #e2e8f0;
+      border-radius: 12px;
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>FizzBuzz (1 〜 50)</h1>
+      <p class="subtitle">ボタンを押すと、1 から 50 までの FizzBuzz を順次アニメーション表示します。</p>
+      
+      <div class="legend">
+        <div class="legend-item"><span class="dot dot-num"></span> 通常の数値</div>
+        <div class="legend-item"><span class="dot dot-fizz"></span> Fizz (3の倍数)</div>
+        <div class="legend-item"><span class="dot dot-buzz"></span> Buzz (5の倍数)</div>
+        <div class="legend-item"><span class="dot dot-fizzbuzz"></span> FizzBuzz (15の倍数)</div>
+      </div>
+    </header>
+
+    <div class="control-panel">
+      <div class="buttons">
+        <button id="btnStart" class="btn-start">カウント開始 ▶</button>
+        <button id="btnReset" class="btn-reset">リセット ↺</button>
+      </div>
+      <div class="status-info">
+        進捗: <span id="statusCount" class="status-count">0</span> / 50
+      </div>
+    </div>
+
+    <div id="gridContainer" class="grid">
+      <div id="emptyState" class="empty-state">
+        「カウント開始」ボタンを押すとアニメーションが始まります
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const MAX_COUNT = 50;
+    const INTERVAL_MS = 60; // 1件あたりの表示間隔（ミリ秒）
+
+    const btnStart = document.getElementById('btnStart');
+    const btnReset = document.getElementById('btnReset');
+    const statusCount = document.getElementById('statusCount');
+    const gridContainer = document.getElementById('gridContainer');
+    const emptyState = document.getElementById('emptyState');
+
+    let currentNum = 1;
+    let timerId = null;
+    let isRunning = false;
+
+    // FizzBuzz 判定
+    function evaluateFizzBuzz(n) {
+      if (n % 15 === 0) {
+        return { type: 'fizzbuzz', label: 'FizzBuzz', subText: n };
+      }
+      if (n % 3 === 0) {
+        return { type: 'fizz', label: 'Fizz', subText: n };
+      }
+      if (n % 5 === 0) {
+        return { type: 'buzz', label: 'Buzz', subText: n };
+      }
+      return { type: 'num', label: `${n}`, subText: `#${n}` };
+    }
+
+    // 1つのカードを作成して追加
+    function appendCard(n) {
+      const data = evaluateFizzBuzz(n);
+      const card = document.createElement('div');
+      card.className = `card ${data.type}`;
+
+      const numEl = document.createElement('div');
+      numEl.className = 'card-number';
+      numEl.textContent = `#${data.subText}`;
+
+      const labelEl = document.createElement('div');
+      labelEl.className = 'card-label';
+      labelEl.textContent = data.label;
+
+      card.appendChild(numEl);
+      card.appendChild(labelEl);
+      gridContainer.appendChild(card);
+
+      statusCount.textContent = n;
+    }
+
+    // ステップ実行ループ
+    function step() {
+      if (currentNum > MAX_COUNT) {
+        stopAnimation();
+        btnStart.textContent = '完了 ✓';
+        btnStart.disabled = true;
+        return;
+      }
+
+      appendCard(currentNum);
+      currentNum++;
+      timerId = setTimeout(step, INTERVAL_MS);
+    }
+
+    // アニメーション開始
+    function startAnimation() {
+      if (isRunning) return;
+
+      if (emptyState && emptyState.parentNode) {
+        emptyState.remove();
+      }
+
+      isRunning = true;
+      btnStart.disabled = true;
+      btnStart.textContent = '実行中...';
+      step();
+    }
+
+    // 停止
+    function stopAnimation() {
+      if (timerId !== null) {
+        clearTimeout(timerId);
+        timerId = null;
+      }
+      isRunning = false;
+    }
+
+    // リセット
+    function resetAll() {
+      stopAnimation();
+      currentNum = 1;
+      statusCount.textContent = '0';
+      gridContainer.innerHTML = '';
+      gridContainer.appendChild(emptyState);
+      btnStart.disabled = false;
+      btnStart.textContent = 'カウント開始 ▶';
+    }
+
+    btnStart.addEventListener('click', startAnimation);
+    btnReset.addEventListener('click', resetAll);
+  </script>
+</body>
+</html>
